@@ -22,4 +22,18 @@ export class PostResolver {
 
     return this.prismaClient.post.findMany({ where: { authorId } });
   }
+
+  async create({ dto }): Promise<Post> {
+    return this.prismaClient.post.create({ data: dto });
+  }
+
+  async update({ id, dto }): Promise<Post> {
+    return this.prismaClient.post.update({ where: { id }, data: dto });
+  }
+
+  async delete({ id }): Promise<string> {
+    await this.prismaClient.post.delete({ where: { id } });
+
+    return 'Post is deleted';
+  }
 }

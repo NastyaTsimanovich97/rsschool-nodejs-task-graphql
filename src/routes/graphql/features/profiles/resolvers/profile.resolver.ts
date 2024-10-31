@@ -22,4 +22,18 @@ export class ProfileResolver {
 
     return this.prismaClient.profile.findUnique({ where: { userId } });
   }
+
+  async create({ dto }): Promise<Profile> {
+    return this.prismaClient.profile.create({ data: dto });
+  }
+
+  async update({ id, dto }): Promise<Profile> {
+    return this.prismaClient.profile.update({ where: { id }, data: dto });
+  }
+
+  async delete({ id }): Promise<string> {
+    await this.prismaClient.profile.delete({ where: { id } });
+
+    return 'Profile is deleted';
+  }
 }

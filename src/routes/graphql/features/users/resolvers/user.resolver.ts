@@ -38,4 +38,39 @@ export class UserResolver {
 
     return subscribers.map((s) => s.subscriber);
   }
+
+  async create({ dto }): Promise<User> {
+    return this.prismaClient.user.create({ data: dto });
+  }
+
+  async update({ id, dto }): Promise<User> {
+    return this.prismaClient.user.update({ where: { id }, data: dto });
+  }
+
+  async delete({ id }): Promise<string> {
+    await this.prismaClient.user.delete({ where: { id } });
+
+    return 'User is deleted';
+  }
+
+  async subscribeTo({ userId, authorId }): Promise<string> {
+    await this.prismaClient.subscribersOnAuthors.create({
+      data: { subscriberId: userId, authorId },
+    });
+
+    return 'User is subscribed!';
+  }
+
+  async unsubscribeFrom({ userId, authorId }): Promise<string> {
+    await this.prismaClient.subscribersOnAuthors.delete({
+      where: {
+        subscriberId_authorId: {
+          subscriberId: userId,
+          authorId,
+        },
+      },
+    });
+
+    return 'User is unsubscribed!';
+  }
 }
