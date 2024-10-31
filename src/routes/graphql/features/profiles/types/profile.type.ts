@@ -6,8 +6,11 @@ import {
   GraphQLObjectType,
 } from 'graphql';
 
-import { MemberTypeType } from '../../memberTypes/types/memberType.type.js';
 import { UUIDType } from '../../../types/uuid.js';
+import { MemberTypeId, MemberTypeType } from '../../memberTypes/types/memberType.type.js';
+import { MemberTypeResolver } from '../../memberTypes/resolvers/memberType.resolver.js';
+
+const memberTypeResolver = new MemberTypeResolver();
 
 export const ProfileType = new GraphQLObjectType({
   name: 'Profile',
@@ -15,7 +18,11 @@ export const ProfileType = new GraphQLObjectType({
     id: { type: new GraphQLNonNull(UUIDType) },
     isMale: { type: new GraphQLNonNull(GraphQLBoolean) },
     yearOfBirth: { type: new GraphQLNonNull(GraphQLInt) },
-    memberType: { type: new GraphQLNonNull(MemberTypeType) /* resolve */ },
+    memberTypeId: { type: MemberTypeId },
+    memberType: {
+      type: MemberTypeType,
+      resolve: async (args) => memberTypeResolver.getByProfile(args),
+    },
   }),
 });
 

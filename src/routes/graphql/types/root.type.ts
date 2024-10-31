@@ -1,4 +1,4 @@
-import { GraphQLNonNull, GraphQLObjectType, GraphQLSchema } from 'graphql';
+import { GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import { UsersType, UserType } from '../features/users/types/user.type.js';
 
 import {
@@ -15,6 +15,14 @@ import { PostResolver } from '../features/posts/resolvers/post.resolver.js';
 import { ProfileResolver } from '../features/profiles/resolvers/profile.resolver.js';
 import { ProfilesType, ProfileType } from '../features/profiles/types/profile.type.js';
 
+// {"query": "query { user(id:\"c7f91b92-3396-45b2-baa8-159a32eafa6b\") {id balance name} }"}
+// {"query": "query { users {id name balance} }"}
+// {"query": "query { memberTypes {id discount postsLimitPerMonth} }"}
+// {"query": "query { post(id:\"6c73b7d5-f042-44fe-97d7-4f49424628fa\") {id title content} }"}
+// {"query": "query { posts {id title content} }"}
+// {"query": "query { profile(id:\"0837ec81-f05e-480c-acb3-8ccd62de1d1c\") {id isMale yearOfBirth} }"}
+// {"query": "query { profiles {id isMale yearOfBirth} }"}
+
 const userResolver = new UserResolver();
 const memberTypeResolver = new MemberTypeResolver();
 const postResolver = new PostResolver();
@@ -22,17 +30,10 @@ const profileResolver = new ProfileResolver();
 
 const id = { type: new GraphQLNonNull(UUIDType) };
 
-const Query = new GraphQLObjectType({
+export const Query = new GraphQLObjectType({
   name: 'Query',
-  fields: {
-    // { "query": "query { users {id name balance} }"}
-    users: {
-      type: UsersType,
-      async resolve(_parent, _args, context) {
-        return userResolver.getAll(_parent, _args, context);
-      },
-    },
-    // {"query": "query { user(id:\"c7f91b92-3396-45b2-baa8-159a32eafa6b\") {id balance name} }"}
+
+  fields: () => ({
     user: {
       type: UserType,
       args: { id },
@@ -40,33 +41,33 @@ const Query = new GraphQLObjectType({
         return userResolver.getById(parent, args, context);
       },
     },
-    // {"query": "query { memberTypes {id discount postsLimitPerMonth} }"}
-    memberTypes: {
-      type: MemberTypeTypes,
-      async resolve(parent, args, context) {
-        return memberTypeResolver.getAll(parent, args, context);
+
+    users: {
+      type: UsersType,
+      async resolve(_parent, _args, context) {
+        return userResolver.getAll(_parent, _args, context);
       },
     },
-    // {"query": "query { memberType(id: BASIC) {id discount postsLimitPerMonth} }"}
+
     memberType: {
       type: MemberTypeType,
       args: {
         id: {
-          type: MemberTypeId,
+          type: new GraphQLNonNull(MemberTypeId),
         },
       },
       async resolve(parent, args, context) {
         return memberTypeResolver.getById(parent, args, context);
       },
     },
-    // {"query": "query { posts {id title content} }"}
-    posts: {
-      type: PostsType,
+
+    memberTypes: {
+      type: MemberTypeTypes,
       async resolve(parent, args, context) {
-        return postResolver.getAll(parent, args, context);
+        return memberTypeResolver.getAll(parent, args, context);
       },
     },
-    // {"query": "query { post(id:\"6c73b7d5-f042-44fe-97d7-4f49424628fa\") {id title content} }"}
+
     post: {
       type: PostType,
       args: { id },
@@ -74,14 +75,14 @@ const Query = new GraphQLObjectType({
         return postResolver.getById(parent, args, context);
       },
     },
-    // {"query": "query { profiles {id isMale yearOfBirth} }"}
-    profiles: {
-      type: ProfilesType,
+
+    posts: {
+      type: PostsType,
       async resolve(parent, args, context) {
-        return profileResolver.getAll(parent, args, context);
+        return postResolver.getAll(parent, args, context);
       },
     },
-    // {"query": "query { profile(id:\"0837ec81-f05e-480c-acb3-8ccd62de1d1c\") {id isMale yearOfBirth} }"}
+
     profile: {
       type: ProfileType,
       args: { id },
@@ -89,12 +90,12 @@ const Query = new GraphQLObjectType({
         return profileResolver.getById(parent, args, context);
       },
     },
-  },
-});
 
-const schema = new GraphQLSchema({
-  query: Query,
-  types: [UserType, MemberTypeType, PostType, ProfileType],
+    profiles: {
+      type: ProfilesType,
+      async resolve(parent, args, context) {
+        return profileResolver.getAll(parent, args, context);
+      },
+    },
+  }),
 });
-
-export default schema;
